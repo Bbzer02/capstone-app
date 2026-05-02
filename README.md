@@ -1,6 +1,8 @@
-# Job Portal Application
+# CTU Danao — HRMO Job Portal (Capstone)
 
-A comprehensive job application and hiring management system built with Laravel 11, featuring modern UI, email notifications, and admin dashboard.
+**Capstone (CTU Danao):** Human Resource Management Office **job portal** for posting university jobs, managing **applications** and **interviews**, and running **admin** workflows. Includes applicant and admin **chat**, **QR-based** admin login flows, profile and **document** handling, and feature tests.
+
+A comprehensive job application and hiring management system built with Laravel, featuring a modern UI, email notifications, and an admin dashboard.
 
 ## Features
 
