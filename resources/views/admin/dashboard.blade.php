@@ -179,7 +179,7 @@
             </div>
             <div class="p-6">
                 @forelse($recentApplications ?? [] as $application)
-                    <div class="group flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50/50 transition-all duration-200 border-b border-gray-100/50 last:border-b-0">
+                    <a href="{{ route('admin.applicants.show', $application) }}" class="group flex items-center justify-between py-4 px-4 rounded-xl hover:bg-gray-50/50 transition-all duration-200 border-b border-gray-100/50 last:border-b-0">
                         <div class="flex items-center space-x-4">
                             <div class="relative">
                                 <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -211,7 +211,7 @@
                                 </svg>
                             </button>
                         </div>
-                    </div>
+                    </a>
                 @empty
                     <div class="text-center py-12">
                         <div class="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center mx-auto mb-4">

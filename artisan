@@ -6,6 +6,27 @@ use Symfony\Component\Console\Input\ArgvInput;
 
 define('LARAVEL_START', microtime(true));
 
+// Suppress proc_open warnings from sebastian/version BEFORE autoload
+// Set comprehensive error handler early
+$originalErrorHandler = set_error_handler(function ($errno, $errstr, $errfile, $errline) use (&$originalErrorHandler) {
+    // Suppress proc_open CreateProcess warnings from sebastian/version
+    if (($errno === E_WARNING || $errno === E_USER_WARNING) && 
+        strpos($errstr, 'proc_open(): CreateProcess failed') !== false &&
+        (strpos($errfile, 'sebastian/version') !== false || strpos($errfile, 'Version.php') !== false)) {
+        return true; // Suppress this warning completely
+    }
+    // Pass other errors to original handler if it exists
+    if ($originalErrorHandler) {
+        return call_user_func($originalErrorHandler, $errno, $errstr, $errfile, $errline);
+    }
+    return false;
+}, E_WARNING | E_USER_WARNING);
+
+// Note: Warnings may still appear in stderr output as they're written directly by PHP
+// The error handler above will suppress them from being logged, but they may still
+// appear in console output. To fully suppress, ensure Git is in your PATH or use
+// the artisan-serve.ps1 wrapper script.
+
 // Register the Composer autoloader...
 require __DIR__.'/vendor/autoload.php';
 

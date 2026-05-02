@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>@yield('title', 'CTU Danao HRMO') - {{ config('app.name', 'Laravel') }}</title>
     
     <!-- Fonts -->
@@ -45,6 +48,7 @@
                         <a href="{{ route('jobs.index') }}" class="text-white hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium">Job Openings</a>
                         @auth
                             <a href="{{ route('dashboard') }}" class="text-white hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
+                            <a href="{{ route('profile.show') }}" class="text-white hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium">Profile</a>
                             <form method="POST" action="{{ route('logout') }}" class="inline">
                                 @csrf
                                 <button type="submit" class="text-white hover:text-blue-200 px-3 py-2 rounded-md text-sm font-medium">Logout</button>
@@ -138,6 +142,43 @@
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Simple Cache Prevention Script -->
+    <script>
+        // Simple cache prevention
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
+        // Only when navigating back (bfcache restore), verify once; if session gone, show session-expired screen
+        (function(){
+            function isBackForwardNavigation(evt) {
+                try {
+                    if (window.performance && window.performance.getEntriesByType) {
+                        var nav = window.performance.getEntriesByType('navigation')[0];
+                        if (nav && nav.type === 'back_forward') { return true; }
+                    }
+                } catch(e) {}
+                return evt && evt.persisted === true;
+            }
+            window.addEventListener('pageshow', function(event) {
+                if (!isBackForwardNavigation(event)) { return; }
+                try {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', '{{ route('session.check.web') }}', true);
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    xhr.onreadystatechange = function() {
+                        if (xhr.readyState === 4 && xhr.status === 401) {
+                            window.location.href = '{{ route('session.expired', ['area' => 'web']) }}';
+                        }
+                    };
+                    xhr.send();
+                } catch(e) { /* no-op */ }
+            });
+        })();
+    </script>
     
     @yield('scripts')
 </body>

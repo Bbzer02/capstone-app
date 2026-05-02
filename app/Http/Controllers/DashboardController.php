@@ -22,7 +22,7 @@ class DashboardController extends Controller
         // Get user's applications if they have any
         $userApplications = collect();
         if ($user) {
-            $userApplications = Applicant::where('email', $user->email)
+            $userApplications = Applicant::where('user_id', $user->id)
                 ->with('job')
                 ->latest()
                 ->take(5)

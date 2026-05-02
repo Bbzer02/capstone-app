@@ -56,5 +56,7 @@ class Kernel extends HttpKernel
         'preventback' => \App\Http\Middleware\PreventBackHistory::class,
         'nocache' => \App\Http\Middleware\NoCache::class,
         'guest.admin' => \App\Http\Middleware\RedirectIfAdminAuthenticated::class,
+        'prevent.back.button' => \App\Http\Middleware\PreventBackButton::class,
+        'admin.idle' => \App\Http\Middleware\AdminIdleTimeout::class,
     ];
 }

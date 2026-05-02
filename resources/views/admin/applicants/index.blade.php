@@ -121,6 +121,41 @@
         @endif
 
         <div class="overflow-x-auto">
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+                function setRejectReason(form) {
+                    Swal.fire({
+                        title: 'Rejection Reason',
+                        html: '<p class="mb-3">Please enter rejection reason:</p><input id="rejection-reason-input" class="swal2-input" placeholder="e.g., Not qualified, Incomplete requirements, Other">',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#6b7280',
+                        confirmButtonText: 'Submit',
+                        cancelButtonText: 'Cancel',
+                        reverseButtons: true,
+                        customClass: {
+                            confirmButton: 'px-6 py-2.5 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition-all duration-200 mx-2',
+                            cancelButton: 'px-6 py-2.5 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200 mx-2'
+                        },
+                        buttonsStyling: false,
+                        preConfirm: () => {
+                            const reason = document.getElementById('rejection-reason-input').value.trim();
+                            if (!reason) {
+                                Swal.showValidationMessage('Rejection reason is required.');
+                                return false;
+                            }
+                            return reason;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed && result.value) {
+                            form.querySelector('input[name="rejection_reason"]').value = result.value;
+                            form.submit();
+                        }
+                    });
+                    return false;
+                }
+            </script>
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -161,12 +196,14 @@
                             <div class="flex flex-col space-y-1">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     @if($applicant->status === 'shortlisted') bg-green-100 text-green-800
+                                    @elseif($applicant->status === 'approved') bg-blue-100 text-blue-800
+                                    @elseif($applicant->status === 'hired') bg-emerald-100 text-emerald-800
                                     @elseif($applicant->status === 'rejected') bg-red-100 text-red-800
-                                    @elseif($applicant->status === 'interview_scheduled') bg-blue-100 text-blue-800
+                                    @elseif($applicant->status === 'interview_scheduled') bg-purple-100 text-purple-800
                                     @else bg-amber-100 text-amber-800 @endif">
                                     {{ ucfirst(str_replace('_', ' ', $applicant->status)) }}
                                 </span>
-                                @if($applicant->interview)
+                                @if($applicant->interview && $applicant->interview->scheduled_at)
                                 <div class="text-xs text-gray-500 flex items-center">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -178,8 +215,20 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             <div>
-                                <div class="font-medium">{{ $applicant->created_at->format('M d, Y') }}</div>
-                                <div class="text-gray-500">{{ $applicant->created_at->diffForHumans() }}</div>
+                                <div class="font-medium">
+                                    @if($applicant->created_at)
+                                        {{ $applicant->created_at->format('M d, Y') }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </div>
+                                <div class="text-gray-500">
+                                    @if($applicant->created_at)
+                                        {{ $applicant->created_at->diffForHumans() }}
+                                    @else
+                                        Not available
+                                    @endif
+                                </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
@@ -205,14 +254,23 @@
                                 </a>
                                 @endif
 
-                                <!-- Reject Button -->
-                                <form action="{{ route('admin.applicants.update-status', $applicant) }}" method="POST" class="inline">
+                                <!-- Send Email Button -->
+                                <button onclick="openGmail('{{ $applicant->email }}', 'Application Update - {{ $applicant->job->title }}', 'Dear {{ $applicant->name }},\n\nThank you for your interest in the {{ $applicant->job->title }} position at CTU Danao HRMO.\n\nWe would like to inform you about the status of your application.\n\nIf you have any questions, please don\'t hesitate to contact us.\n\nBest regards,\nCTU Danao HRMO Team')" 
+                                   class="inline-flex items-center px-3 py-2 border border-green-300 shadow-sm text-sm leading-4 font-medium rounded-md text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 mr-2">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                    Email
+                                </button>
+
+                                <!-- Reject Button with reason prompt -->
+                                <form action="{{ route('admin.applicants.update-status', $applicant) }}" method="POST" class="inline" onsubmit="return setRejectReason(this)">
                                     @csrf
-                                    @method('PATCH')
+                                    @method('PUT')
                                     <input type="hidden" name="status" value="rejected">
+                                    <input type="hidden" name="rejection_reason" value="">
                                     <button type="submit" 
-                                            class="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
-                                            onclick="return confirm('Are you sure you want to reject this applicant?')">
+                                            class="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
@@ -271,5 +329,19 @@
         console.log('{{ session('success') }}');
         @endif
     });
+
+    function openGmail(email, subject, body) {
+        // Try to open Gmail directly
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        
+        // Open Gmail in a new tab
+        const gmailWindow = window.open(gmailUrl, '_blank');
+        
+        // If Gmail doesn't open, fallback to mailto
+        if (!gmailWindow || gmailWindow.closed || typeof gmailWindow.closed == 'undefined') {
+            const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            window.location.href = mailtoUrl;
+        }
+    }
 </script>
 @endsection

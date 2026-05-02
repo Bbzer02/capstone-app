@@ -51,7 +51,12 @@ class JobListingController extends Controller
     {
         $request->validate([
             'cover_letter' => 'required|string|max:2000',
-            'resume' => 'required|file|mimes:pdf|max:2048',
+            'resume' => 'required|file|mimes:pdf,doc,docx|max:5120',
+            'cover_letter_file' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'transcript' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'portfolio' => 'nullable|file|mimes:pdf,zip|max:20480',
+            'additional_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,zip|max:10240',
         ]);
         
         // Check if user already applied
@@ -63,19 +68,55 @@ class JobListingController extends Controller
             return back()->with('error', 'You have already applied for this job.');
         }
         
-        // Store resume
-        $resumePath = $request->file('resume')->store('resumes', 'public');
-        
-        // Create application
+        // Store resume first to satisfy non-null DB constraint
+        $tempResumePath = $request->file('resume')->store('applicants', 'public');
+
+        // Create application with resume path
         $applicant = Applicant::create([
+            'user_id' => Auth::id(),
             'job_id' => $job->id,
             'name' => Auth::user()->name,
             'email' => Auth::user()->email,
             'phone' => $request->phone ?? '',
             'cover_letter' => $request->cover_letter,
-            'resume_path' => $resumePath,
+            'resume_path' => $tempResumePath,
             'status' => 'pending',
         ]);
+
+        $basePath = 'applicants/' . $applicant->id;
+        $updates = [];
+
+        // Optionally re-store resume under applicant-specific folder for consistency
+        if ($request->hasFile('resume')) {
+            $updates['resume_path'] = $request->file('resume')->store($basePath, 'public');
+        }
+        if ($request->hasFile('cover_letter_file')) {
+            $updates['cover_letter_path'] = $request->file('cover_letter_file')->store($basePath, 'public');
+        }
+        if ($request->hasFile('transcript')) {
+            $updates['transcript_path'] = $request->file('transcript')->store($basePath, 'public');
+        }
+        if ($request->hasFile('certificate')) {
+            $updates['certificate_path'] = $request->file('certificate')->store($basePath, 'public');
+        }
+        if ($request->hasFile('portfolio')) {
+            $updates['portfolio_path'] = $request->file('portfolio')->store($basePath, 'public');
+        }
+        if ($request->hasFile('additional_documents')) {
+            $additional = [];
+            foreach ($request->file('additional_documents') as $file) {
+                $stored = $file->store($basePath, 'public');
+                $additional[] = [
+                    'name' => $file->getClientOriginalName(),
+                    'path' => $stored,
+                ];
+            }
+            $updates['additional_documents'] = $additional;
+        }
+
+        if (!empty($updates)) {
+            $applicant->update($updates);
+        }
         
         // Send email notification
         try {
@@ -85,6 +126,6 @@ class JobListingController extends Controller
             \Log::error('Failed to send application received email: ' . $e->getMessage());
         }
         
-        return back()->with('success', 'Your application has been submitted successfully!');
+        return redirect()->route('applications.index')->with('success', 'Your application has been submitted successfully!');
     }
 }

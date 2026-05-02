@@ -156,12 +156,21 @@
 
                 <!-- Requirements Section -->
                 <div class="mb-8">
-                    <h4 class="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-200 pb-2">Requirements</h4>
+                    <div class="flex items-center justify-between mb-1">
+                        <h4 class="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 flex-1">Requirements</h4>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4">
+                        You can fill in only the requirement types that apply to this position. Leave a field blank if it is
+                        <span class="font-semibold">not needed</span> for this job.
+                    </p>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Education Requirements -->
                         <div>
-                            <label for="education_requirements" class="block text-sm font-medium text-gray-700 mb-2">Education Requirements <span class="text-red-500">*</span></label>
+                            <label for="education_requirements" class="block text-sm font-medium text-gray-700 mb-1">
+                                Education Requirements
+                                <span class="text-xs text-gray-500 font-normal">(optional)</span>
+                            </label>
                             <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('education_requirements') border-red-500 @enderror" 
                                       id="education_requirements" name="education_requirements" rows="4" 
                                       placeholder="e.g., Must be a Bachelor of Science in Chemical Engineering graduate&#10;Must possess at least Master of Engineering in Chemical Engineering" required>{{ old('education_requirements') }}</textarea>
@@ -172,7 +181,10 @@
 
                         <!-- Experience Requirements -->
                         <div>
-                            <label for="experience_requirements" class="block text-sm font-medium text-gray-700 mb-2">Experience Requirements</label>
+                            <label for="experience_requirements" class="block text-sm font-medium text-gray-700 mb-1">
+                                Experience Requirements
+                                <span class="text-xs text-gray-500 font-normal">(optional)</span>
+                            </label>
                             <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('experience_requirements') border-red-500 @enderror" 
                                       id="experience_requirements" name="experience_requirements" rows="4" 
                                       placeholder="e.g., None required, At least 2 years teaching experience">{{ old('experience_requirements') }}</textarea>
@@ -183,7 +195,10 @@
 
                         <!-- Training Requirements -->
                         <div>
-                            <label for="training_requirements" class="block text-sm font-medium text-gray-700 mb-2">Training Requirements</label>
+                            <label for="training_requirements" class="block text-sm font-medium text-gray-700 mb-1">
+                                Training Requirements
+                                <span class="text-xs text-gray-500 font-normal">(optional)</span>
+                            </label>
                             <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('training_requirements') border-red-500 @enderror" 
                                       id="training_requirements" name="training_requirements" rows="4" 
                                       placeholder="e.g., None required, At least 40 hours of relevant training">{{ old('training_requirements') }}</textarea>
@@ -194,10 +209,13 @@
 
                         <!-- Eligibility/Licenses -->
                         <div>
-                            <label for="eligibility_requirements" class="block text-sm font-medium text-gray-700 mb-2">Eligibility/Licenses <span class="text-red-500">*</span></label>
+                            <label for="eligibility_requirements" class="block text-sm font-medium text-gray-700 mb-1">
+                                Eligibility/Licenses
+                                <span class="text-xs text-gray-500 font-normal">(optional)</span>
+                            </label>
                             <textarea class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('eligibility_requirements') border-red-500 @enderror" 
                                       id="eligibility_requirements" name="eligibility_requirements" rows="4" 
-                                      placeholder="e.g., Licensed Chemical Engineer, Civil Service Professional" required>{{ old('eligibility_requirements') }}</textarea>
+                                      placeholder="e.g., Licensed Chemical Engineer, Civil Service Professional">{{ old('eligibility_requirements') }}</textarea>
                             @error('eligibility_requirements')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -266,15 +284,18 @@
                 <!-- Submit Buttons -->
                 <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
                     <a href="{{ route('admin.jobs.index') }}" 
-                       class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                       class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200 font-medium shadow-sm">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
                         Cancel
                     </a>
                     <button type="submit" 
-                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 font-medium shadow-sm">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        <span>Create Job Posting</span>
+                        Create Job Posting
                     </button>
                 </div>
             </form>

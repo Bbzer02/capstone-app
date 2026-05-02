@@ -57,6 +57,9 @@ public function store(Request $request, Applicant $applicant)
         ]
     );
 
+    // Update applicant status to interview_scheduled
+    $applicant->update(['status' => 'interview_scheduled']);
+
     return redirect()
         ->route('admin.applicants.show', $applicant)
         ->with('success', 'Interview scheduled successfully!');
@@ -66,6 +69,9 @@ public function destroy(Interview $interview)
 {
     $applicant = $interview->applicant;
     $interview->delete();
+    
+    // Update applicant status back to shortlisted
+    $applicant->update(['status' => 'shortlisted']);
     
     return redirect()
         ->route('admin.applicants.show', $applicant)

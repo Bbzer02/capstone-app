@@ -11,7 +11,7 @@ class ApplicantController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Applicant::with(['job', 'interview']);
+        $query = Applicant::with(['job', 'interview', 'user']);
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -34,17 +34,30 @@ class ApplicantController extends Controller
 
     public function show(Applicant $applicant)
     {
-        $applicant = $applicant->load(['job', 'interview']);
+        $applicant = $applicant->load(['job', 'interview', 'user']);
         return view('admin.applicants.show', compact('applicant'));
     }
 
     public function updateStatus(Request $request, Applicant $applicant)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,shortlisted,rejected'
+            'status' => 'required|in:pending,shortlisted,interview_scheduled,approved,hired,rejected',
+            'rejection_reason' => 'nullable|string|max:255',
+            'is_editable_by_user' => 'nullable|boolean'
         ]);
 
-        $applicant->update(['status' => $validated['status']]);
+        $update = ['status' => $validated['status']];
+
+        if ($validated['status'] === 'rejected') {
+            $update['rejection_reason'] = $validated['rejection_reason'] ?? 'Not specified';
+        } else {
+            // Clear rejection reason if moving away from rejected
+            $update['rejection_reason'] = null;
+        }
+
+        $update['is_editable_by_user'] = (bool) $request->boolean('is_editable_by_user');
+
+        $applicant->update($update);
         return back()->with('success', 'Applicant status updated!');
         
     }

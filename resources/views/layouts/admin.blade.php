@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>@yield('title', 'CTU Danao HRMO Admin') - {{ config('app.name', 'Laravel') }}</title>
     
     <!-- Fonts -->
@@ -106,6 +109,15 @@
                     </svg>
                     Schedule Interview
                 </a>
+                
+                <a href="{{ route('admin.chat.index') }}" 
+                   @click="sidebarOpen = false"
+                   class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ request()->routeIs('admin.chat.*') ? 'bg-blue-100 text-blue-900' : 'text-white hover:bg-blue-600 hover:text-white' }}">
+                    <svg class="mr-3 h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    Chat Conversations
+                </a>
             </nav>
         </div>
 
@@ -126,6 +138,20 @@
                     </div>
                     
                     <div class="flex items-center space-x-4">
+                        @php
+                            $onlineAdmins = \App\Models\AdminUser::where('is_online', true)->latest('last_login_at')->limit(5)->get();
+                        @endphp
+                        @if($onlineAdmins->count())
+                            <div class="hidden md:flex items-center space-x-2 text-xs text-green-700">
+                                <span class="inline-flex items-center px-2 py-1 bg-green-100 rounded-full">
+                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                    {{ $onlineAdmins->count() }} online
+                                </span>
+                                @foreach($onlineAdmins as $adm)
+                                    <span class="px-2 py-1 bg-green-50 rounded text-green-800">{{ $adm->name }}</span>
+                                @endforeach
+                            </div>
+                        @endif
                         <!-- Profile dropdown -->
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" class="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -137,7 +163,7 @@
                             
                             <div x-show="open" @click.away="open = false" x-cloak 
                                  class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
+                                <a href="{{ route('admin.profile.show') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Your Profile</a>
                                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
                                 <form method="POST" action="{{ route('admin.logout') }}">
                                     @csrf
@@ -156,21 +182,45 @@
                 <div class="py-6">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         @if(session('success'))
-                            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                                {{ session('success') }}
-                            </div>
+                            <div id="success-message" class="hidden">{{ session('success') }}</div>
                         @endif
 
                         @if(session('error'))
-                            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                {{ session('error') }}
-                            </div>
+                            <div id="error-message" class="hidden">{{ session('error') }}</div>
                         @endif
 
                 @yield('content')
                     </div>
                 </div>
             </main>
+            <script>
+                // On back/forward cache restore, verify session once; if gone, show session-expired screen
+                (function() {
+                    function isBackForwardNavigation(evt) {
+                        try {
+                            if (window.performance && window.performance.getEntriesByType) {
+                                var nav = window.performance.getEntriesByType('navigation')[0];
+                                if (nav && nav.type === 'back_forward') { return true; }
+                            }
+                        } catch(e) {}
+                        return evt && evt.persisted === true;
+                    }
+                    window.addEventListener('pageshow', function(event) {
+                        if (!isBackForwardNavigation(event)) { return; }
+                        try {
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('GET', '{{ route('admin.session.check') }}', true);
+                            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                            xhr.onreadystatechange = function() {
+                                if (xhr.readyState === 4 && xhr.status === 401) {
+                                    window.location.href = '{{ route('session.expired', ['area' => 'admin']) }}';
+                                }
+                            };
+                            xhr.send();
+                        } catch (e) { /* no-op */ }
+                    });
+                })();
+            </script>
         </div>
     </div>
 
@@ -179,6 +229,51 @@
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Simple Cache Prevention Script -->
+    <script>
+        // Simple cache prevention
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                window.location.reload();
+            }
+        });
+
+        // Convert session messages to SweetAlert2
+        document.addEventListener('DOMContentLoaded', function() {
+            const successMsg = document.getElementById('success-message');
+            const errorMsg = document.getElementById('error-message');
+            
+            if (successMsg && successMsg.textContent.trim()) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: successMsg.textContent.trim(),
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#10b981',
+                    customClass: {
+                        confirmButton: 'px-6 py-2.5 rounded-lg font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-200'
+                    },
+                    buttonsStyling: false,
+                    timer: 3000
+                });
+            }
+            
+            if (errorMsg && errorMsg.textContent.trim()) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: errorMsg.textContent.trim(),
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc2626',
+                    customClass: {
+                        confirmButton: 'px-6 py-2.5 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition-all duration-200'
+                    },
+                    buttonsStyling: false
+                });
+            }
+        });
+    </script>
     
     @yield('scripts')
 </body>

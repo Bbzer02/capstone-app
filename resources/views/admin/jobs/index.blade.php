@@ -173,8 +173,8 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="button" 
-                                            class="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200 delete-btn">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            class="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 delete-btn">
+                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
                                         Delete
@@ -225,13 +225,37 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Confirm before unpublishing
+        // SweetAlert UI for publish/unpublish
         document.querySelectorAll('form[action*="toggle-publish"]').forEach(form => {
             form.addEventListener('submit', function(e) {
+                e.preventDefault();
                 const isPublished = this.querySelector('button').textContent.trim().includes('Unpublish');
-                if (isPublished && !confirm('Are you sure you want to unpublish this job?')) {
-                    e.preventDefault();
-                }
+                const jobTitle = this.closest('tr').querySelector('.text-sm.font-medium').textContent;
+
+                Swal.fire({
+                    title: isPublished ? 'Unpublish Job?' : 'Publish Job?',
+                    html: isPublished
+                        ? `This will hide <strong>${jobTitle}</strong> from applicants.`
+                        : `This will make <strong>${jobTitle}</strong> visible to applicants.`,
+                    icon: isPublished ? 'warning' : 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: isPublished ? '#dc2626' : '#10b981',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: isPublished ? 'Yes, unpublish' : 'Yes, publish',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true,
+                    customClass: {
+                        confirmButton: isPublished 
+                            ? 'px-6 py-2.5 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition-all duration-200 mx-2'
+                            : 'px-6 py-2.5 rounded-lg font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-200 mx-2',
+                        cancelButton: 'px-6 py-2.5 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200 mx-2'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
             });
         });
 
@@ -246,14 +270,14 @@
                     html: `You are about to delete <strong>${jobTitle}</strong>.<br>This action cannot be undone.`,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonColor: '#6b7280',
                     confirmButtonText: 'Yes, delete it!',
                     cancelButtonText: 'Cancel',
                     reverseButtons: true,
                     customClass: {
-                        confirmButton: 'btn btn-danger mx-2',
-                        cancelButton: 'btn btn-secondary mx-2'
+                        confirmButton: 'px-6 py-2.5 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition-all duration-200 mx-2',
+                        cancelButton: 'px-6 py-2.5 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200 mx-2'
                     },
                     buttonsStyling: false
                 }).then((result) => {

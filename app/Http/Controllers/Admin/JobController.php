@@ -41,10 +41,11 @@ class JobController extends Controller
             'item_number' => 'nullable|string|max:255',
             'campus' => 'required|string|max:255',
             'vacancies' => 'required|integer|min:1',
-            'education_requirements' => 'required|string',
+            // All requirement fields are now optional so admin can decide what to include
+            'education_requirements' => 'nullable|string',
             'experience_requirements' => 'nullable|string',
             'training_requirements' => 'nullable|string',
-            'eligibility_requirements' => 'required|string',
+            'eligibility_requirements' => 'nullable|string',
             'email_subject_format' => 'nullable|string|max:255'
         ]);
 
@@ -80,10 +81,11 @@ class JobController extends Controller
             'item_number' => 'nullable|string|max:255',
             'campus' => 'required|string|max:255',
             'vacancies' => 'required|integer|min:1',
-            'education_requirements' => 'required|string',
+            // All requirement fields are now optional so admin can decide what to keep/omit
+            'education_requirements' => 'nullable|string',
             'experience_requirements' => 'nullable|string',
             'training_requirements' => 'nullable|string',
-            'eligibility_requirements' => 'required|string',
+            'eligibility_requirements' => 'nullable|string',
             'email_subject_format' => 'nullable|string|max:255'
         ]);
 

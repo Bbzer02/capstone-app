@@ -1,5 +1,64 @@
 @extends('layouts.admin')
 
+@section('title', 'Schedule Interview - ' . ($applicant->name ?? 'Applicant'))
+
+@section('content')
+<div class="p-6">
+    <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
+            <h1 class="text-2xl font-bold text-gray-900">Schedule Interview</h1>
+            <p class="text-gray-600">{{ $applicant->name }} for {{ $job->title }}</p>
+        </div>
+        <div class="p-6">
+            @if ($errors->any())
+                <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                    <ul class="list-disc list-inside text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form method="POST" action="{{ route('admin.interviews.store', $applicant) }}" class="space-y-6">
+                @csrf
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Date & Time</label>
+                    <input type="datetime-local" name="scheduled_at" value="{{ old('scheduled_at') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Interview Type</label>
+                    <select name="type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" required>
+                        <option value="in_person" {{ old('type') === 'in_person' ? 'selected' : '' }}>In-person</option>
+                        <option value="phone" {{ old('type') === 'phone' ? 'selected' : '' }}>Phone</option>
+                        <option value="video" {{ old('type') === 'video' ? 'selected' : '' }}>Video</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Interviewer Name (optional)</label>
+                    <input type="text" name="interviewer_name" value="{{ old('interviewer_name') }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="e.g., HR Officer John Doe">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes (optional)</label>
+                    <textarea name="notes" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Add any details or instructions for the interview...">{{ old('notes') }}</textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3">
+                    <a href="{{ route('admin.applicants.show', $applicant) }}" class="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200">Cancel</a>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Schedule Interview</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
+@extends('layouts.admin')
+
 @section('title', 'CTU Danao HRMO - Schedule Interview')
 
 @section('content')

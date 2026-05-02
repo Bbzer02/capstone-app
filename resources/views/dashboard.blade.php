@@ -35,7 +35,7 @@
             </div>
         </a>
 
-        <a href="{{ route('jobs.index') }}" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <a href="{{ route('profile.show') }}" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div class="flex items-center">
                 <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
                     <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +49,7 @@
             </div>
         </a>
 
-        <a href="#" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <a href="{{ route('applications.index') }}" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
             <div class="flex items-center">
                 <div class="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
                     <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,18 +74,34 @@
                 @if(isset($userApplications) && $userApplications->count() > 0)
                     <div class="space-y-4">
                         @foreach($userApplications as $application)
-                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                                <div>
-                                    <h3 class="font-medium text-gray-900">{{ $application->job->title ?? 'Job Title' }}</h3>
-                                    <p class="text-sm text-gray-600">{{ $application->job->department ?? 'Department' }}</p>
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                <div class="flex-1">
+                                    <a href="{{ route('applications.show', $application) }}" class="block">
+                                        <h3 class="font-medium text-gray-900 hover:text-blue-600 transition-colors duration-200">{{ $application->job->title ?? 'Job Title' }}</h3>
+                                        <p class="text-sm text-gray-600">{{ $application->job->department ?? 'Department' }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">Applied {{ $application->created_at->format('M j, Y') }}</p>
+                                    </a>
                                 </div>
-                                <span class="px-3 py-1 text-xs font-medium rounded-full 
-                                    @if($application->status === 'pending') bg-yellow-100 text-yellow-800
-                                    @elseif($application->status === 'approved') bg-green-100 text-green-800
-                                    @elseif($application->status === 'rejected') bg-red-100 text-red-800
-                                    @else bg-gray-100 text-gray-800 @endif">
-                                    {{ ucfirst($application->status) }}
-                                </span>
+                                <div class="flex items-center space-x-3">
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full 
+                                        @if($application->status === 'pending') bg-blue-100 text-blue-800
+                                        @elseif($application->status === 'shortlisted') bg-yellow-100 text-yellow-800
+                                        @elseif($application->status === 'interview_scheduled') bg-purple-100 text-purple-800
+                                        @elseif($application->status === 'approved') bg-green-100 text-green-800
+                                        @elseif($application->status === 'hired') bg-emerald-100 text-emerald-800
+                                        @elseif($application->status === 'rejected') bg-red-100 text-red-800
+                                        @else bg-gray-100 text-gray-800 @endif">
+                                        {{ ucfirst(str_replace('_', ' ', $application->status)) }}
+                                    </span>
+                                    <a href="{{ route('applications.show', $application) }}" 
+                                       class="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center space-x-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        <span>View</span>
+                                    </a>
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -101,6 +117,18 @@
                                 Browse Jobs
                             </a>
                         </div>
+                    </div>
+                @endif
+                
+                @if(isset($userApplications) && $userApplications->count() > 0)
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <a href="{{ route('applications.index') }}" 
+                           class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors duration-200">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            View All Applications
+                        </a>
                     </div>
                 @endif
             </div>
